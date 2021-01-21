@@ -1,4 +1,4 @@
-from .blocks import *
+from ..utils.blocks import *
 import torch.nn as nn
 
 class UNet(nn.Module):
