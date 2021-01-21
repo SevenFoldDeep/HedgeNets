@@ -38,7 +38,7 @@ def trainModel(model, device, loader, loss_list, criterion, optimizer, epoch, sc
         loss_val.backward()
 
         # update the parameters
-    	optimizer.step()
+        optimizer.step()
         if scheduler is not None:
             scheduler.step()
 
