@@ -175,41 +175,80 @@ class AtrousBlock(nn.Module):
         super(AtrousBlock, self).__init__()
         
         # normalize the number of incoming layers
-        self.norm = normConv(in_channels, 4, padding, bias) 
+        self.norm = normConv(in_channels, out_channels, padding, bias) 
+        
+        #atrousconvs = []
+        #for dilate in dilations:
+        #    atrousconvs.append(AtrousConv(block_num,
+        #                       1,
+        #                       4, 
+        #                       out_channels[0], 
+        #                       kernel, 
+        #                       padding = padding + dilations[0] -1, 
+        #                       dilation = dilate,
+        #                       bias = bias)
+        #                       )
+        
+        
+        #self.aspp = nn.Sequential(*atrousconvs)
         self.aspp1 = AtrousConv(block_num,
                                1,
-                               4, 
-                               out_channels[0], 
+                               out_channels, 
+                               out_channels, 
                                kernel, 
                                padding = padding + dilations[0] -1, 
                                dilation = dilations[0],
                                bias = bias)
         self.aspp2 = AtrousConv(block_num,
                                2,
-                               out_channels[0], 
-                               out_channels[1], 
+                               out_channels, 
+                               out_channels, 
                                kernel, 
                                padding = padding + dilations[1]-1, 
                                dilation = dilations[1],
                                bias = bias)
         self.aspp3 = AtrousConv(block_num,
                                3,
-                               out_channels[1], 
-                               out_channels[2], 
+                               out_channels, 
+                               out_channels, 
                                kernel, 
                                padding = padding + dilations[2]-1, 
                                dilation = dilations[2],
                                bias = bias)
         self.aspp4 = AtrousConv(block_num,
                                4,
-                               out_channels[2], 
-                               out_channels[3], 
+                               out_channels, 
+                               out_channels, 
                                kernel, 
                                padding = padding + dilations[3]-1, 
                                dilation = dilations[3],
                                bias = bias)
-        
-        self.bn_out = nn.BatchNorm2d(out_channels[3]* (len(dilations) + 1)) 
+        self.aspp5 = AtrousConv(block_num,
+                               4,
+                               out_channels, 
+                               out_channels, 
+                               kernel, 
+                               padding = padding + dilations[4]-1, 
+                               dilation = dilations[4],
+                               bias = bias)
+        self.aspp6 = AtrousConv(block_num,
+                               4,
+                               out_channels, 
+                               out_channels, 
+                               kernel, 
+                               padding = padding + dilations[5]-1, 
+                               dilation = dilations[5],
+                               bias = bias)
+        self.aspp7 = AtrousConv(block_num,
+                               4,
+                               out_channels, 
+                               out_channels, 
+                               kernel, 
+                               padding = padding + dilations[6]-1, 
+                               dilation = dilations[6],
+                               bias = bias)
+    
+        self.bn_out = nn.BatchNorm2d(out_channels* (len(dilations) + 1)) 
         self.relu_out = nn.ReLU()
         
     def forward(self, x):
@@ -218,7 +257,11 @@ class AtrousBlock(nn.Module):
         x3 = self.aspp2(x1)
         x4 = self.aspp3(x1)
         x5 = self.aspp4(x1)
-        x = torch.cat((x1, x2, x3, x4, x5), 
+        x6 = self.aspp5(x1)
+        x7 = self.aspp6(x1)
+        x8 = self.aspp7(x1)
+
+        x = torch.cat((x1, x2, x3, x4, x5, x6, x7, x8), 
                       dim=1) # CORRECT CONCAT DIM?
         x = self.bn_out(x)
         x = self.relu_out(x)
