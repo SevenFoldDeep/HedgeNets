@@ -28,9 +28,9 @@ def trainModel(model, device, loader, loss_list, criterion, optimizer, epoch, sc
         map_out = np.where(map[0,:,:]>map[1,:,:], 0, 255).astype(np.uint8)
 
         #calculate the loss
-        print("*" * 20)
-        print('training loss', loss_val.tolist())
-        print()
+        #print("*" * 20)
+        #print('training loss', loss_val.tolist())
+        #print()
         
         # track batch loss
         loss_list.append(loss_val.item())
@@ -39,6 +39,7 @@ def trainModel(model, device, loader, loss_list, criterion, optimizer, epoch, sc
 
         # update the parameters
         optimizer.step()
+
         if scheduler is not None:
             scheduler.step()
 
@@ -72,9 +73,9 @@ def validateModel(model, device, loader, loss_list, epoch, criterion, save = Non
             loss_val = criterion(out.to(device), msk_batch.type(torch.long))  
 
             #calculate the loss
-            print("*" * 20)
-            print('testing loss', loss_val.tolist())
-            print()
+            #print("*" * 20)
+            #print('testing loss', loss_val.tolist())
+            #print()
             
             # track batch loss
             loss_list.append(loss_val.item())
