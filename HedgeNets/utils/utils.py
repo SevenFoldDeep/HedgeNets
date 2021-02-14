@@ -3,9 +3,14 @@ from PIL import Image
 import torch
 
 def trainModel(model, device, loader, loss_list, criterion, optimizer, epoch, scheduler = None, save = None):
+    """Runs a training loop for a single epoch.
 
+    """
     # Turn on training mode
     model.train(True)
+
+    # track loss for this epoch
+    epoch_loss = []
 
     # loop through all batches
     for j, (img_batch, msk_batch, img_name) in enumerate(loader):
@@ -26,14 +31,11 @@ def trainModel(model, device, loader, loss_list, criterion, optimizer, epoch, sc
         # Create an argmax map for a visualization of the results
         map = np.squeeze(out.cpu().detach().numpy()[0,:,:,:])
         map_out = np.where(map[0,:,:]>map[1,:,:], 0, 255).astype(np.uint8)
-
-        #calculate the loss
-        #print("*" * 20)
-        #print('training loss', loss_val.tolist())
-        #print()
         
-        # track batch loss
+        # track loss
         loss_list.append(loss_val.item())
+        epoch_loss.append(loss_val.item())
+
         # backpropagation
         loss_val.backward()
 
@@ -53,16 +55,27 @@ def trainModel(model, device, loader, loss_list, criterion, optimizer, epoch, sc
             im = Image.fromarray(map_out)
             im.save(save % (epoch, img_name[0]))
 
+    print("*" * 20)
+    print('Training loss for epoch %d : ' % epoch, np.mean(np.array(epoch_loss)))
+    print()
+
     return loss_list
 
 def validateModel(model, device, loader, loss_list, epoch, criterion, save = None):
+    """Runs a validation loop for a single epoch.
 
+    """
     # Turn off training mode
     model.train(False)
 
+    # track loss for this epoch
+    epoch_loss = []
+
     # loop through all batches
     with torch.no_grad():
+        
         for img_batch, msk_batch, img_name in loader:
+
             # load image and mask
             img_batch, msk_batch = img_batch.to(device), msk_batch.to(device)
 
@@ -71,27 +84,22 @@ def validateModel(model, device, loader, loss_list, epoch, criterion, save = Non
 
             # calculate loss
             loss_val = criterion(out.to(device), msk_batch.type(torch.long))  
-
-            #calculate the loss
-            #print("*" * 20)
-            #print('testing loss', loss_val.tolist())
-            #print()
             
-            # track batch loss
+            # track loss
             loss_list.append(loss_val.item())
+            epoch_loss.append(loss_val.item())
 
             map = np.squeeze(out.cpu().detach().numpy()[0,:,:,:])
             map_out = np.where(map[0,:,:]>map[1,:,:], 0, 255).astype(np.uint8)
-            #print('mean backg', np.mean(map[0,:,:]))
-            #print('mean hedges', np.mean(map[1,:,:]))
-            #print('max map', np.max(map_out))
-            #print()
+
             if save:
                 # Create an argmax map
                 #map = np.squeeze(out.cpu().detach().numpy()[0,:,:,:])
-                #plt.imshow(map_out)
-                #map_out = np.where(map[0,:,:]>map[1,:,:], 0, 255).astype(np.uint8)
                 im = Image.fromarray(map_out)
                 im.save(save % (epoch, img_name[0]))
+
+        print("*" * 20)
+	print('Validation loss for epoch %d : ' % epoch, np.mean(np.array(epoch_loss)))
+        print()
 
         return loss_list
