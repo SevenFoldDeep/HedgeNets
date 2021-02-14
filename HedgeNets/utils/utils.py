@@ -99,7 +99,7 @@ def validateModel(model, device, loader, loss_list, epoch, criterion, save = Non
                 im.save(save % (epoch, img_name[0]))
 
         print("*" * 20)
-	print('Validation loss for epoch %d : ' % epoch, np.mean(np.array(epoch_loss)))
+        print('Validation loss for epoch %d : ' % epoch, np.mean(np.array(epoch_loss)))
         print()
 
         return loss_list
