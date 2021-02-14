@@ -11,7 +11,7 @@ def dice_loss(pred, truth):
 
 def binary_focal_loss(pred, truth, gamma=2., alpha=.25):
     eps = 1e-8
-    pred = nn.Softmax(1)(pred)
+    pred = torch.nn.Softmax(1)(pred)
 
     truth = F.one_hot(truth, num_classes = pred.shape[1]).permute(0,3,1,2).contiguous()
 
